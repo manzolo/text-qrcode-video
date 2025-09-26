@@ -1,5 +1,7 @@
 # Text to QR Code Video Encoder/Decoder
 
+<img width="1397" height="894" alt="image" src="https://github.com/user-attachments/assets/4b78abd0-bf6f-45bd-a239-02cb80979e49" />
+
 A Python-based tool to encode text into a video of QR codes and decode it back to text. This project allows users to convert text into a compact MP4 video where each frame is a QR code, optimized for size and reliability, and to extract the original text from the video.
 
 ## Features
@@ -23,8 +25,8 @@ A Python-based tool to encode text into a video of QR codes and decode it back t
 
 2. **Build and Run with Docker**:
    ```bash
-   docker compose build
-   docker compose up -d
+   chmod +x ./start.sh
+   ./start.sh
    ```
 
 3. **Access the Web Interface**:
