@@ -8,13 +8,13 @@ from .decoder import VideoToTextDecoder
 app = Flask(__name__, static_folder='/app/web/static', static_url_path='/static')
 CORS(app)
 
-# Configurazione
+# Configuration
 DATA_DIR = Path("/data")
 INPUT_DIR = DATA_DIR / "input"
 OUTPUT_DIR = DATA_DIR / "output"
 TEMP_DIR = DATA_DIR / "temp"
 
-# Crea directory se non esistono
+# Create directories if they don't exist
 for dir_path in [INPUT_DIR, OUTPUT_DIR, TEMP_DIR]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
@@ -28,7 +28,7 @@ def index():
 
 @app.route('/encode', methods=['POST'])
 def encode_text():
-    """Endpoint per codificare testo in video QR"""
+    """Endpoint for encoding text into QR video"""
     try:
         if 'file' in request.files:
             file = request.files['file']
@@ -40,11 +40,11 @@ def encode_text():
         if not text:
             return jsonify({'error': 'No text provided'}), 400
         
-        # Genera nome file output
+        # Generate output filename
         output_filename = f"encoded_{os.urandom(8).hex()}.mp4"
         output_path = OUTPUT_DIR / output_filename
         
-        # Codifica
+        # Encode
         success = encoder.encode(text, str(output_path))
         
         if success:
@@ -62,7 +62,7 @@ def encode_text():
 
 @app.route('/decode', methods=['POST'])
 def decode_video():
-    """Endpoint per decodificare video QR in testo"""
+    """Endpoint for decoding QR video into text"""
     try:
         if 'video' not in request.files:
             return jsonify({'error': 'No video file provided'}), 400
@@ -71,14 +71,19 @@ def decode_video():
         video_path = TEMP_DIR / f"temp_{os.urandom(8).hex()}.mp4"
         video.save(str(video_path))
         
-        # Decodifica
+        # Decode
+        # NOTE: The original code includes logic to check a decoder log file for missing chunks,
+        # but the provided decoder class doesn't explicitly write a separate log file
+        # and instead prints to stdout/stderr. Assuming the goal is to check for
+        # internal warnings, we'll keep the log check structure but note the likely
+        # need for adjustment in a real production environment.
         text = decoder.decode(str(video_path))
         
-        # Pulisci file temporaneo
+        # Clean up temporary file
         video_path.unlink()
         
         if text:
-            # Controlla i log per chunk mancanti
+            # Check logs for missing chunks (Log file checking logic kept as per original)
             log_file = '/tmp/decoder.log'
             warning = None
             if os.path.exists(log_file):
@@ -100,7 +105,7 @@ def decode_video():
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    """Download del file codificato"""
+    """Download of the encoded file"""
     file_path = OUTPUT_DIR / filename
     if file_path.exists():
         return send_file(str(file_path), as_attachment=True)

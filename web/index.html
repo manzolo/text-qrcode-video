@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -195,25 +195,25 @@
         <h1>📱 Text ↔️ QR Video</h1>
         
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('encode')">Codifica</button>
-            <button class="tab" onclick="switchTab('decode')">Decodifica</button>
+            <button class="tab active" onclick="switchTab('encode')">Encode</button>
+            <button class="tab" onclick="switchTab('decode')">Decode</button>
         </div>
         
         <div id="encode-tab" class="tab-content active">
             <div class="upload-area" id="text-upload">
-                <p>📄 Trascina qui un file di testo o clicca per selezionare</p>
+                <p>📄 Drag a text file here or click to select</p>
                 <input type="file" id="text-file" accept=".txt" style="display: none">
             </div>
             
-            <textarea id="text-input" placeholder="...oppure incolla qui il testo da codificare"></textarea>
+            <textarea id="text-input" placeholder="...or paste the text to encode here"></textarea>
             
             <button class="btn" id="encode-btn" onclick="encodeText()">
-                <span id="encode-btn-text">Genera Video QR</span>
+                <span id="encode-btn-text">Generate QR Video</span>
                 <span class="loader" style="display: none"></span>
             </button>
             
             <div id="encode-result" class="result">
-                <h3>✅ Codifica completata!</h3>
+                <h3>✅ Encoding complete!</h3>
                 <div class="stats">
                     <div class="stat">
                         <div class="stat-value" id="chunks-count">0</div>
@@ -221,29 +221,29 @@
                     </div>
                     <div class="stat">
                         <div class="stat-value" id="file-size">0 KB</div>
-                        <div class="stat-label">Dimensione</div>
+                        <div class="stat-label">Size</div>
                     </div>
                 </div>
-                <a id="download-link" class="btn" style="margin-top: 20px">📥 Scarica Video</a>
+                <a id="download-link" class="btn" style="margin-top: 20px">📥 Download Video</a>
             </div>
         </div>
         
         <div id="decode-tab" class="tab-content">
             <div class="upload-area" id="video-upload">
-                <p>🎥 Trascina qui un video QR o clicca per selezionare</p>
+                <p>🎥 Drag a QR video here or click to select</p>
                 <input type="file" id="video-file" accept=".mp4,.avi,.mov" style="display: none">
             </div>
             
             <button class="btn" id="decode-btn" onclick="decodeVideo()" disabled>
-                <span id="decode-btn-text">Decodifica Video</span>
+                <span id="decode-btn-text">Decode Video</span>
                 <span class="loader" style="display: none"></span>
             </button>
             
             <div id="decode-result" class="result">
-                <h3>✅ Decodifica completata!</h3>
+                <h3>✅ Decoding complete!</h3>
                 <div id="decode-warning" class="warning-message" style="display: none;"></div>
                 <textarea id="decoded-text" readonly style="margin-top: 20px"></textarea>
-                <button class="btn" onclick="copyText()" style="margin-top: 10px">📋 Copia Testo</button>
+                <button class="btn" onclick="copyText()" style="margin-top: 10px">📋 Copy Text</button>
             </div>
         </div>
     </div>
@@ -324,7 +324,7 @@
         async function encodeText() {
             const text = document.getElementById('text-input').value;
             if (!text) {
-                alert('Inserisci del testo da codificare!');
+                alert('Please enter some text to encode!');
                 return;
             }
             
@@ -351,10 +351,10 @@
                     document.getElementById('download-link').href = `/download/${result.filename}`;
                     document.getElementById('encode-result').classList.add('show');
                 } else {
-                    alert('Errore nella codifica: ' + result.error);
+                    alert('Encoding error: ' + result.error);
                 }
             } catch (error) {
-                alert('Errore: ' + error.message);
+                alert('Error: ' + error.message);
             } finally {
                 btn.disabled = false;
                 btnText.style.display = 'inline';
@@ -364,7 +364,7 @@
         
         async function decodeVideo() {
             if (!selectedVideoFile) {
-                alert('Seleziona un video da decodificare!');
+                alert('Please select a video to decode!');
                 return;
             }
             
@@ -398,10 +398,10 @@
                     }
                     document.getElementById('decode-result').classList.add('show');
                 } else {
-                    alert('Errore nella decodifica: ' + result.error);
+                    alert('Decoding error: ' + result.error);
                 }
             } catch (error) {
-                alert('Errore: ' + error.message);
+                alert('Error: ' + error.message);
             } finally {
                 btn.disabled = false;
                 btnText.style.display = 'inline';
@@ -413,7 +413,7 @@
             const textarea = document.getElementById('decoded-text');
             textarea.select();
             document.execCommand('copy');
-            alert('Testo copiato negli appunti!');
+            alert('Text copied to clipboard!');
         }
         
         function formatFileSize(bytes) {

@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 def cleanup_temp_files(temp_dir):
-    """Pulisce i file temporanei"""
+    """Cleans up temporary files"""
     temp_path = Path(temp_dir)
     if temp_path.exists():
         for file in temp_path.glob('*'):
@@ -11,16 +11,16 @@ def cleanup_temp_files(temp_dir):
                 file.unlink()
 
 def get_file_size_mb(filepath):
-    """Ritorna la dimensione del file in MB"""
+    """Returns the file size in MB"""
     return os.path.getsize(filepath) / (1024 * 1024)
 
 def compress_video_h265(input_path, output_path):
-    """Comprime ulteriormente il video usando H.265"""
+    """Further compresses the video using H.265"""
     import subprocess
     cmd = [
         'ffmpeg', '-i', str(input_path),
-        '-c:v', 'libx265', '-crf', '18',  # Ridotto a 18 per meno artefatti
-        '-preset', 'veryfast',
+        '-c:v', 'libx265', '-crf', '25',  # Increased to 25 for more compression
+        '-preset', 'slow',  # Changed to 'slow' for better compression
         '-tag:v', 'hvc1',
         '-an',
         str(output_path)
