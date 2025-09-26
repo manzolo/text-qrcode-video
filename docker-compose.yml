@@ -1,0 +1,24 @@
+
+services:
+  qr-encoder:
+    build: .
+    container_name: text-qr-video
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+      - ./app:/app/app  # Per sviluppo hot-reload
+      - ./web:/app/web
+    environment:
+      - FLASK_ENV=development
+      - PYTHONUNBUFFERED=1
+      - MAX_CHUNK_SIZE=2048
+      - QR_SIZE=512
+      - FPS=10
+    restart: unless-stopped
+    networks:
+      - qr-network
+
+networks:
+  qr-network:
+    driver: bridge

@@ -1,0 +1,17 @@
+*.pyc
+__pycache__
+.git
+.gitignore
+*.md
+.DS_Store
+data/output/*
+data/temp/*
+tests/__pycache__
+.pytest_cache
+venv/
+env/
+.env
+*.log
+*.pid
+*.seed
+*.pid.lock

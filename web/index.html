@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to QR Video Encoder</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Text ↔️ QR Video</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('encode')">Codifica</button>
+            <button class="tab" onclick="switchTab('decode')">Decodifica</button>
+        </div>
+        
+        <div id="encode-tab" class="tab-content active">
+            <div class="upload-area" id="text-upload">
+                <p>📄 Trascina qui un file di testo o clicca per selezionare</p>
+                <input type="file" id="text-file" accept=".txt" style="display: none">
+            </div>
+            
+            <textarea id="text-input" placeholder="...oppure incolla qui il testo da codificare"></textarea>
+            
+            <button class="btn" id="encode-btn" onclick="encodeText()">
+                <span id="encode-btn-text">Genera Video QR</span>
+                <span class="loader" style="display: none"></span>
+            </button>
+            
+            <div id="encode-result" class="result">
+                <h3>✅ Codifica completata!</h3>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="chunks-count">0</div>
+                        <div class="stat-label">QR Codes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="file-size">0 KB</div>
+                        <div class="stat-label">Dimensione</div>
+                    </div>
+                </div>
+                <a id="download-link" class="btn" style="margin-top: 20px">📥 Scarica Video</a>
+            </div>
+        </div>
+        
+        <div id="decode-tab" class="tab-content">
+            <div class="upload-area" id="video-upload">
+                <p>🎥 Trascina qui un video QR o clicca per selezionare</p>
+                <input type="file" id="video-file" accept=".mp4,.avi,.mov" style="display: none">
+            </div>
+            
+            <button class="btn" id="decode-btn" onclick="decodeVideo()" disabled>
+                <span id="decode-btn-text">Decodifica Video</span>
+                <span class="loader" style="display: none"></span>
+            </button>
+            
+            <div id="decode-result" class="result">
+                <h3>✅ Decodifica completata!</h3>
+                <div id="decode-warning" class="warning-message" style="display: none;"></div>
+                <textarea id="decoded-text" readonly style="margin-top: 20px"></textarea>
+                <button class="btn" onclick="copyText()" style="margin-top: 10px">📋 Copia Testo</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let selectedTextFile = null;
+        let selectedVideoFile = null;
+        
+        // Setup upload areas
+        document.getElementById('text-upload').addEventListener('click', () => {
+            document.getElementById('text-file').click();
+        });
+        
+        document.getElementById('video-upload').addEventListener('click', () => {
+            document.getElementById('video-file').click();
+        });
+        
+        // File selection handlers
+        document.getElementById('text-file').addEventListener('change', (e) => {
+            selectedTextFile = e.target.files[0];
+            if (selectedTextFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('text-input').value = e.target.result;
+                };
+                reader.readAsText(selectedTextFile);
+            }
+        });
+        
+        document.getElementById('video-file').addEventListener('change', (e) => {
+            selectedVideoFile = e.target.files[0];
+            document.getElementById('decode-btn').disabled = !selectedVideoFile;
+        });
+        
+        // Drag and drop
+        ['text-upload', 'video-upload'].forEach(id => {
+            const area = document.getElementById(id);
+            
+            area.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                area.classList.add('dragover');
+            });
+            
+            area.addEventListener('dragleave', () => {
+                area.classList.remove('dragover');
+            });
+            
+            area.addEventListener('drop', (e) => {
+                e.preventDefault();
+                area.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    if (id === 'text-upload') {
+                        document.getElementById('text-file').files = files;
+                        document.getElementById('text-file').dispatchEvent(new Event('change'));
+                    } else {
+                        document.getElementById('video-file').files = files;
+                        document.getElementById('video-file').dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        });
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'encode') {
+                document.querySelector('.tab:nth-child(1)').classList.add('active');
+                document.getElementById('encode-tab').classList.add('active');
+            } else {
+                document.querySelector('.tab:nth-child(2)').classList.add('active');
+                document.getElementById('decode-tab').classList.add('active');
+            }
+        }
+        
+        async function encodeText() {
+            const text = document.getElementById('text-input').value;
+            if (!text) {
+                alert('Inserisci del testo da codificare!');
+                return;
+            }
+            
+            const btn = document.getElementById('encode-btn');
+            const btnText = document.getElementById('encode-btn-text');
+            const loader = btn.querySelector('.loader');
+            
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('/encode', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text: text})
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('chunks-count').textContent = result.chunks;
+                    document.getElementById('file-size').textContent = formatFileSize(result.size);
+                    document.getElementById('download-link').href = `/download/${result.filename}`;
+                    document.getElementById('encode-result').classList.add('show');
+                } else {
+                    alert('Errore nella codifica: ' + result.error);
+                }
+            } catch (error) {
+                alert('Errore: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                loader.style.display = 'none';
+            }
+        }
+        
+        async function decodeVideo() {
+            if (!selectedVideoFile) {
+                alert('Seleziona un video da decodificare!');
+                return;
+            }
+            
+            const btn = document.getElementById('decode-btn');
+            const btnText = document.getElementById('decode-btn-text');
+            const loader = btn.querySelector('.loader');
+            
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loader.style.display = 'inline-block';
+            
+            try {
+                const formData = new FormData();
+                formData.append('video', selectedVideoFile);
+                
+                const response = await fetch('/decode', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('decoded-text').value = result.text;
+                    const warningDiv = document.getElementById('decode-warning');
+                    if (result.warning) {
+                        warningDiv.textContent = result.warning;
+                        warningDiv.style.display = 'block';
+                    } else {
+                        warningDiv.style.display = 'none';
+                    }
+                    document.getElementById('decode-result').classList.add('show');
+                } else {
+                    alert('Errore nella decodifica: ' + result.error);
+                }
+            } catch (error) {
+                alert('Errore: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline';
+                loader.style.display = 'none';
+            }
+        }
+        
+        function copyText() {
+            const textarea = document.getElementById('decoded-text');
+            textarea.select();
+            document.execCommand('copy');
+            alert('Testo copiato negli appunti!');
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+    </script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
